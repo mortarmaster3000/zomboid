@@ -10,10 +10,8 @@
 </head>
 <body>
 
-  <!-- MAIN LAYOUT -->
   <div class="layout">
 
-    <!-- MAP PANEL -->
     <div class="map-panel">
       <iframe
         src="https://b42map.com/"
@@ -23,29 +21,18 @@
       ></iframe>
     </div>
 
-    <!-- OBJECTIVES PANEL -->
     <aside class="objectives-panel">
 
-      <!-- Add Objective Form -->
       <div class="add-objective-form">
-        <input
-          type="text"
-          id="new-objective-title"
-          class="obj-input"
-          placeholder="New objective..."
-          maxlength="80"
-        />
-        <button id="add-obj-btn" class="btn btn-add" onclick="addObjective()">+ ADD</button>
+        <button class="btn btn-add full-width" onclick="openModal()">+ ADD OBJECTIVE</button>
       </div>
 
-      <!-- Filter Tabs -->
       <div class="filter-tabs">
         <button class="tab active" onclick="setFilter('all', this)">ALL</button>
         <button class="tab" onclick="setFilter('active', this)">UNFINISHED</button>
         <button class="tab" onclick="setFilter('done', this)">FINISHED</button>
       </div>
 
-      <!-- Objectives List -->
       <div class="objectives-list" id="objectives-list">
         <div class="empty-state" id="empty-state">
           <span>theres nothing here</span>
@@ -53,6 +40,25 @@
       </div>
 
     </aside>
+  </div>
+
+  <!-- EDIT MODAL -->
+  <div class="modal-overlay hidden" id="modal-overlay" onclick="overlayClick(event)">
+    <div class="modal">
+      <div class="modal-header">
+        <span class="modal-title" id="modal-title-label">NEW OBJECTIVE</span>
+        <button class="modal-close" onclick="closeModal()">✕</button>
+      </div>
+      <div class="modal-body">
+        <label class="modal-label">OBJECTIVE</label>
+        <input type="text" id="modal-obj-title" class="obj-input" placeholder="" maxlength="80" />
+        <label class="modal-label" style="margin-top:12px">DESCRIPTION</label>
+        <textarea id="modal-obj-desc" class="obj-input obj-textarea" placeholder="" maxlength="300"></textarea>
+        <div class="modal-actions">
+          <button class="btn btn-add" onclick="saveObjective()">SAVE</button>
+        </div>
+      </div>
+    </div>
   </div>
 
   <script type="module" src="app.js"></script>
