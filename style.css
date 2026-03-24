@@ -1,0 +1,339 @@
+/* =============================================
+   KNOX OPS — Project Zomboid Objectives Tracker
+   Dark, gritty, military-survival aesthetic
+   ============================================= */
+
+   :root {
+    --bg:         #0e0e0e;
+    --bg2:        #141414;
+    --bg3:        #1c1c1c;
+    --border:     #2e2e2e;
+    --border-hi:  #444;
+    --accent:     #4a90d9;
+    --accent-dim: #2a5a8a;
+    --red:        #b84040;
+    --green:      #4a8c4a;
+    --text:       #d4cfc4;
+    --text-dim:   #6e6b62;
+    --text-hi:    #ede8dc;
+    --mono:       'Share Tech Mono', monospace;
+    --display:    'Oswald', sans-serif;
+    --stamp:      'Special Elite', cursive;
+  
+    --panel-w:    380px;
+  }
+  
+  *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+  
+  html, body {
+    height: 100%;
+    background: var(--bg);
+    color: var(--text);
+    font-family: var(--mono);
+    font-size: 13px;
+    overflow: hidden;
+  }
+  
+  /* Subtle noise texture overlay */
+  body::before {
+    content: '';
+    position: fixed;
+    inset: 0;
+    background-image: url("data:image/svg+xml,%3Csvg viewBox='0 0 200 200' xmlns='http://www.w3.org/2000/svg'%3E%3Cfilter id='n'%3E%3CfeTurbulence type='fractalNoise' baseFrequency='0.9' numOctaves='4' stitchTiles='stitch'/%3E%3C/filter%3E%3Crect width='100%25' height='100%25' filter='url(%23n)' opacity='0.03'/%3E%3C/svg%3E");
+    pointer-events: none;
+    z-index: 9999;
+    opacity: 0.4;
+  }
+  
+  /* ---- LAYOUT ---- */
+  .layout {
+    display: flex;
+    height: 100vh;
+  }
+  
+  /* ---- MAP PANEL ---- */
+  .map-panel {
+    flex: 1;
+    display: flex;
+    flex-direction: column;
+    position: relative;
+    background: #000;
+  }
+  
+  .panel-label {
+    font-family: var(--mono);
+    font-size: 10px;
+    letter-spacing: 0.15em;
+    color: var(--text-dim);
+    padding: 6px 12px;
+    background: var(--bg2);
+    border-bottom: 1px solid var(--border);
+    border-right: 1px solid var(--border);
+    text-align: center;
+  }
+  
+  .map-frame {
+    flex: 1;
+    width: 100%;
+    border: none;
+    display: block;
+  }
+  
+  /* ---- OBJECTIVES PANEL ---- */
+  .objectives-panel {
+    width: var(--panel-w);
+    min-width: var(--panel-w);
+    background: var(--bg2);
+    border-left: 1px solid var(--border);
+    display: flex;
+    flex-direction: column;
+    overflow: hidden;
+  }
+  
+  .objectives-panel .panel-label {
+    border-right: none;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  
+  /* ---- ADD FORM ---- */
+  .add-objective-form {
+    display: flex;
+    gap: 8px;
+    padding: 12px;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  
+  .obj-input {
+    flex: 1;
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    color: var(--text-hi);
+    font-family: var(--mono);
+    font-size: 12px;
+    padding: 7px 10px;
+    outline: none;
+    transition: border-color 0.15s;
+  }
+  
+  .obj-input:focus {
+    border-color: var(--accent-dim);
+  }
+  
+  .obj-input::placeholder {
+    color: var(--text-dim);
+  }
+  
+  /* ---- BUTTONS ---- */
+  .btn {
+    font-family: var(--display);
+    font-size: 12px;
+    font-weight: 600;
+    letter-spacing: 0.1em;
+    border: 1px solid;
+    cursor: pointer;
+    padding: 6px 14px;
+    transition: background 0.15s, color 0.15s;
+    white-space: nowrap;
+  }
+  
+  .btn-add {
+    background: transparent;
+    border-color: var(--accent-dim);
+    color: var(--accent);
+  }
+  
+  .btn-add:hover {
+    background: var(--accent);
+    color: #000;
+  }
+  
+  .btn-danger {
+    background: transparent;
+    border-color: #5a2020;
+    color: var(--red);
+    padding: 4px 8px;
+    font-size: 11px;
+  }
+  
+  .btn-danger:hover {
+    background: var(--red);
+    color: #fff;
+  }
+  
+  /* ---- FILTER TABS ---- */
+  .filter-tabs {
+    display: flex;
+    border-bottom: 1px solid var(--border);
+    flex-shrink: 0;
+  }
+  
+  .tab {
+    flex: 1;
+    background: transparent;
+    border: none;
+    border-right: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--display);
+    font-size: 11px;
+    letter-spacing: 0.12em;
+    padding: 8px 0;
+    cursor: pointer;
+    transition: color 0.15s, background 0.15s;
+  }
+  
+  .tab:last-child { border-right: none; }
+  
+  .tab:hover { color: var(--text); background: var(--bg3); }
+  
+  .tab.active {
+    color: var(--accent);
+    background: var(--bg3);
+    border-bottom: 2px solid var(--accent);
+  }
+  
+  /* ---- OBJECTIVES LIST ---- */
+  .objectives-list {
+    flex: 1;
+    overflow-y: auto;
+    padding: 8px;
+    display: flex;
+    flex-direction: column;
+    gap: 6px;
+  }
+  
+  .objectives-list::-webkit-scrollbar { width: 4px; }
+  .objectives-list::-webkit-scrollbar-track { background: transparent; }
+  .objectives-list::-webkit-scrollbar-thumb { background: var(--border-hi); }
+  
+  .empty-state {
+    text-align: center;
+    color: var(--text-dim);
+    padding: 40px 20px;
+    line-height: 2;
+    font-family: var(--stamp);
+    font-size: 14px;
+  }
+  
+  /* ---- OBJECTIVE CARD ---- */
+  .obj-card {
+    background: var(--bg3);
+    border: 1px solid var(--border);
+    padding: 10px 12px;
+    display: flex;
+    flex-direction: column;
+    gap: 7px;
+    transition: border-color 0.15s;
+    animation: slideIn 0.2s ease;
+  }
+  
+  @keyframes slideIn {
+    from { opacity: 0; transform: translateY(-6px); }
+    to   { opacity: 1; transform: translateY(0); }
+  }
+  
+  .obj-card:hover { border-color: var(--border-hi); }
+  
+  .obj-card.done {
+    opacity: 0.5;
+    border-color: transparent;
+  }
+  
+  .obj-card.done .obj-title {
+    text-decoration: line-through;
+    color: var(--text-dim);
+  }
+  
+  .obj-card-top {
+    display: flex;
+    align-items: flex-start;
+    gap: 9px;
+  }
+  
+  /* Custom checkbox */
+  .obj-check {
+    appearance: none;
+    -webkit-appearance: none;
+    width: 16px;
+    height: 16px;
+    min-width: 16px;
+    border: 1px solid var(--border-hi);
+    background: var(--bg);
+    cursor: pointer;
+    margin-top: 2px;
+    position: relative;
+    transition: background 0.15s, border-color 0.15s;
+  }
+  
+  .obj-check:checked {
+    background: var(--green);
+    border-color: var(--green);
+  }
+  
+  .obj-check:checked::after {
+    content: '✓';
+    position: absolute;
+    top: -1px;
+    left: 1px;
+    font-size: 11px;
+    color: #fff;
+    font-family: var(--mono);
+  }
+  
+  .obj-title {
+    flex: 1;
+    font-family: var(--stamp);
+    font-size: 13px;
+    color: var(--text-hi);
+    line-height: 1.4;
+    word-break: break-word;
+  }
+  
+  .obj-actions {
+    display: flex;
+    gap: 6px;
+    align-items: center;
+    margin-left: auto;
+    flex-shrink: 0;
+  }
+  
+  .btn-comment {
+    background: transparent;
+    border: 1px solid var(--border);
+    color: var(--text-dim);
+    font-family: var(--mono);
+    font-size: 10px;
+    padding: 3px 8px;
+    cursor: pointer;
+    transition: color 0.15s, border-color 0.15s;
+    white-space: nowrap;
+  }
+  
+  .btn-comment:hover {
+    color: var(--accent);
+    border-color: var(--accent-dim);
+  }
+  
+  .btn-comment.has-comments {
+    color: var(--accent);
+    border-color: var(--accent-dim);
+  }
+  
+  .obj-meta {
+    font-size: 10px;
+    color: var(--text-dim);
+    letter-spacing: 0.05em;
+  }
+  
+  
+  
+  
+  
+  /* ---- RESPONSIVE ---- */
+  @media (max-width: 700px) {
+    .layout { flex-direction: column; overflow: auto; }
+    .map-panel { height: 50vh; }
+    .objectives-panel { width: 100%; min-width: unset; height: 50vh; }
+    body { overflow: auto; }
+  }

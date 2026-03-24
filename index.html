@@ -1,0 +1,60 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>zomboid</title>
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Share+Tech+Mono&family=Oswald:wght@400;600;700&family=Special+Elite&display=swap" rel="stylesheet" />
+  <link rel="stylesheet" href="style.css" />
+</head>
+<body>
+
+  <!-- MAIN LAYOUT -->
+  <div class="layout">
+
+    <!-- MAP PANEL -->
+    <div class="map-panel">
+      <iframe
+        src="https://b42map.com/"
+        class="map-frame"
+        title="Project Zomboid B42 Map"
+        allowfullscreen
+      ></iframe>
+    </div>
+
+    <!-- OBJECTIVES PANEL -->
+    <aside class="objectives-panel">
+
+      <!-- Add Objective Form -->
+      <div class="add-objective-form">
+        <input
+          type="text"
+          id="new-objective-title"
+          class="obj-input"
+          placeholder="New objective..."
+          maxlength="80"
+        />
+        <button id="add-obj-btn" class="btn btn-add" onclick="addObjective()">+ ADD</button>
+      </div>
+
+      <!-- Filter Tabs -->
+      <div class="filter-tabs">
+        <button class="tab active" onclick="setFilter('all', this)">ALL</button>
+        <button class="tab" onclick="setFilter('active', this)">UNFINISHED</button>
+        <button class="tab" onclick="setFilter('done', this)">FINISHED</button>
+      </div>
+
+      <!-- Objectives List -->
+      <div class="objectives-list" id="objectives-list">
+        <div class="empty-state" id="empty-state">
+          <span>theres nothing here</span>
+        </div>
+      </div>
+
+    </aside>
+  </div>
+
+  <script type="module" src="app.js"></script>
+</body>
+</html>
