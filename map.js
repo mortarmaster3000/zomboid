@@ -1,7 +1,7 @@
 // ── TILE MAP VIEWER ──────────────────────────
 const TILE_BASE = "https://mortarmaster3000.github.io/zomboid/tiles";
 const TILE_SIZE = 256;
-const MAX_ZOOM  = 4;
+const MAX_ZOOM  = 5;
 const MAP_W     = 41984;
 const MAP_H     = 26624;
 
@@ -18,10 +18,29 @@ const tileCache = {};
 
 function getTileImg(z, col, row) {
   const key = `${z}/${col}_${row}`;
+  if (tileCache[key] === "blank") return null;
   if (tileCache[key]) return tileCache[key];
   const img = new Image();
+  img.crossOrigin = "anonymous";
   img.src = `${TILE_BASE}/${z}/${col}_${row}.jpg`;
-  img.onload = () => draw();
+  img.onload = () => {
+    // Check if tile is mostly white/blank
+    const offscreen = document.createElement("canvas");
+    offscreen.width  = 16;
+    offscreen.height = 16;
+    const octx = offscreen.getContext("2d");
+    octx.drawImage(img, 0, 0, 16, 16);
+    const data = octx.getImageData(0, 0, 16, 16).data;
+    let total = 0;
+    for (let i = 0; i < data.length; i += 4) {
+      total += (data[i] + data[i+1] + data[i+2]) / 3;
+    }
+    const avg = total / (data.length / 4);
+    if (avg > 240) {
+      tileCache[key] = "blank";
+    }
+    draw();
+  };
   tileCache[key] = img;
   return img;
 }
@@ -75,7 +94,7 @@ function draw() {
       const img = getTileImg(tileZ, col, row);
       const x   = camX + col * tileRenderSize;
       const y   = camY + row * tileRenderSize;
-      if (img.complete && img.naturalWidth > 0) {
+      if (img && img.complete && img.naturalWidth > 0) {
         ctx.drawImage(img, x, y, tileRenderSize, tileRenderSize);
       } else {
         ctx.fillStyle = "#1a1a1a";
@@ -114,19 +133,19 @@ window.addEventListener("mouseup", () => {
 
 canvas.addEventListener("wheel", (e) => {
   e.preventDefault();
-  const delta   = e.deltaY > 0 ? -0.2 : 0.2;
+  const delta   = e.deltaY > 0 ? -0.15 : 0.15;
   const newZoom = Math.max(0, Math.min(MAX_ZOOM, zoom + delta));
-  
-  // Zoom toward mouse position
-  const { s: oldS } = getMapSize();
-  zoom = newZoom;
-  const { s: newS } = getMapSize();
-  const ratio = newS / oldS;
+  if (newZoom === zoom) return;
 
   const mouseX = e.clientX - canvas.getBoundingClientRect().left;
   const mouseY = e.clientY - canvas.getBoundingClientRect().top;
-  camX = mouseX - (mouseX - camX) * ratio;
-  camY = mouseY - (mouseY - camY) * ratio;
+
+  const { w: oldW, h: oldH } = getMapSize();
+  zoom = newZoom;
+  const { w: newW, h: newH } = getMapSize();
+
+  camX = mouseX - (mouseX - camX) * (newW / oldW);
+  camY = mouseY - (mouseY - camY) * (newH / oldH);
   draw();
 }, { passive: false });
 
