@@ -133,19 +133,19 @@ window.addEventListener("mouseup", () => {
 
 canvas.addEventListener("wheel", (e) => {
   e.preventDefault();
-  const delta   = e.deltaY > 0 ? -0.2 : 0.2;
+  const delta   = e.deltaY > 0 ? -0.15 : 0.15;
   const newZoom = Math.max(0, Math.min(MAX_ZOOM, zoom + delta));
-  
-  // Zoom toward mouse position
-  const { s: oldS } = getMapSize();
-  zoom = newZoom;
-  const { s: newS } = getMapSize();
-  const ratio = newS / oldS;
+  if (newZoom === zoom) return;
 
   const mouseX = e.clientX - canvas.getBoundingClientRect().left;
   const mouseY = e.clientY - canvas.getBoundingClientRect().top;
-  camX = mouseX - (mouseX - camX) * ratio;
-  camY = mouseY - (mouseY - camY) * ratio;
+
+  const { w: oldW, h: oldH } = getMapSize();
+  zoom = newZoom;
+  const { w: newW, h: newH } = getMapSize();
+
+  camX = mouseX - (mouseX - camX) * (newW / oldW);
+  camY = mouseY - (mouseY - camY) * (newH / oldH);
   draw();
 }, { passive: false });
 
