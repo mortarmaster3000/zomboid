@@ -21,10 +21,33 @@ const firebaseConfig = {
 const app = initializeApp(firebaseConfig);
 const db  = getDatabase(app);
 
-let objectives     = [];
-let currentFilter  = "all";
-let activeObjId    = null;   // for edit modal
-let openCommentId  = null;   // which card has comments expanded
+let objectives    = [];
+let currentFilter = "all";
+let activeObjId   = null;
+let openCommentId = null;
+
+window._objectives = objectives;
+window._pinMode    = false;
+window._onPin      = function(fx, fy) {
+  if (!window._pinObjId) return;
+  update(ref(db, `objectives/${window._pinObjId}`), { pin: { x: fx, y: fy } });
+  cancelPin();
+};
+
+// ── PIN MODE ─────────────────────────────────
+window.startPin = function(id) {
+  window._pinMode  = true;
+  window._pinObjId = id;
+  document.getElementById("pin-banner").classList.remove("hidden");
+  document.getElementById("map-canvas").style.cursor = "crosshair";
+};
+
+window.cancelPin = function() {
+  window._pinMode  = false;
+  window._pinObjId = null;
+  document.getElementById("pin-banner").classList.add("hidden");
+  document.getElementById("map-canvas").style.cursor = "grab";
+};
 
 // ── FIREBASE ─────────────────────────────────
 onValue(ref(db, "objectives"), (snapshot) => {
@@ -32,15 +55,15 @@ onValue(ref(db, "objectives"), (snapshot) => {
   objectives = Object.entries(data)
     .map(([id, val]) => ({ id, ...val }))
     .sort((a, b) => a.createdAt - b.createdAt);
+  window._objectives = objectives;
   renderObjectives();
+  if (window.mapDraw) window.mapDraw();
 });
 
 // ── EDIT MODAL ───────────────────────────────
 window.openModal = function(id = null) {
   activeObjId = id;
-  const overlay = document.getElementById("modal-overlay");
-  overlay.classList.remove("hidden");
-
+  document.getElementById("modal-overlay").classList.remove("hidden");
   if (id) {
     const obj = objectives.find(o => o.id === id);
     if (!obj) return;
@@ -64,24 +87,18 @@ window.overlayClick = function(e) {
   if (e.target === document.getElementById("modal-overlay")) closeModal();
 };
 
-document.addEventListener("keydown", (e) => {
-  if (e.key === "Escape") closeModal();
-});
+document.addEventListener("keydown", (e) => { if (e.key === "Escape") closeModal(); });
 
 window.saveObjective = function() {
   const title = document.getElementById("modal-obj-title").value.trim();
   const desc  = document.getElementById("modal-obj-desc").value.trim();
   if (!title) return;
-
   if (activeObjId) {
     update(ref(db, `objectives/${activeObjId}`), { title, description: desc });
   } else {
     push(ref(db, "objectives"), {
-      title,
-      description: desc,
-      done:        false,
-      comments:    [],
-      createdAt:   Date.now(),
+      title, description: desc,
+      done: false, comments: [], createdAt: Date.now(),
     });
   }
   closeModal();
@@ -91,16 +108,11 @@ document.getElementById("modal-obj-title").addEventListener("keydown", (e) => {
   if (e.key === "Enter") window.saveObjective();
 });
 
-// ── COMMENTS DROPDOWN ────────────────────────
+// ── COMMENTS ─────────────────────────────────
 window.toggleComments = function(id) {
   openCommentId = openCommentId === id ? null : id;
   renderObjectives();
-  if (openCommentId) {
-    setTimeout(() => {
-      const input = document.getElementById(`comment-input-${id}`);
-      if (input) input.focus();
-    }, 50);
-  }
+  if (openCommentId) setTimeout(() => document.getElementById(`comment-input-${id}`)?.focus(), 50);
 };
 
 window.postComment = function(id) {
@@ -117,7 +129,6 @@ window.commentKeydown = function(e, id) {
   if (e.key === "Enter") window.postComment(id);
 };
 
-// ── TOGGLE / DELETE ──────────────────────────
 window.toggleDone = function(id, current) {
   update(ref(db, `objectives/${id}`), { done: !current });
 };
@@ -127,7 +138,6 @@ window.deleteObjective = function(id) {
   remove(ref(db, `objectives/${id}`));
 };
 
-// ── FILTER ───────────────────────────────────
 window.setFilter = function(filter, btn) {
   currentFilter = filter;
   document.querySelectorAll(".tab").forEach(t => t.classList.remove("active"));
@@ -151,20 +161,14 @@ function renderObjectives() {
   }
 
   empty.style.display = "none";
-
   const existing = {};
   [...list.children].forEach(c => { if (c.dataset.id) existing[c.dataset.id] = c; });
-
   const ids = filtered.map(o => o.id);
   Object.keys(existing).forEach(id => { if (!ids.includes(id)) existing[id].remove(); });
 
   filtered.forEach((obj) => {
     let card = existing[obj.id];
-    if (!card) {
-      card = document.createElement("div");
-      card.dataset.id = obj.id;
-      list.appendChild(card);
-    }
+    if (!card) { card = document.createElement("div"); card.dataset.id = obj.id; list.appendChild(card); }
     card.className = `obj-card${obj.done ? " done" : ""}`;
     card.innerHTML = cardHTML(obj);
   });
@@ -175,26 +179,20 @@ function cardHTML(obj) {
   const comments     = obj.comments || [];
   const commentCount = comments.length;
   const isOpen       = openCommentId === obj.id;
+  const pinBtn       = obj.done ? "" : `<button class="btn-pin ${obj.pin ? "pinned" : ""}" onclick="startPin('${obj.id}')" title="Place marker">📍</button>`;
 
   const commentsHTML = isOpen ? `
     <div class="comments-dropdown">
       ${commentCount === 0
-        ? `<div class="no-comments">no comments</div>`
+        ? `<div class="no-comments">no comments yet</div>`
         : comments.map(c => `
-            <div class="comment-item">
-              <span>${escapeHTML(c.text)}</span>
-              <span class="comment-meta">${new Date(c.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
-            </div>`).join("")
+          <div class="comment-item">
+            <span>${escapeHTML(c.text)}</span>
+            <span class="comment-meta">${new Date(c.timestamp).toLocaleDateString("en-US", { month: "short", day: "numeric", hour: "2-digit", minute: "2-digit" })}</span>
+          </div>`).join("")
       }
       <div class="comment-input-row">
-        <input
-          type="text"
-          id="comment-input-${obj.id}"
-          class="obj-input"
-          placeholder="Add a comment"
-          maxlength="200"
-          onkeydown="commentKeydown(event, '${obj.id}')"
-        />
+        <input type="text" id="comment-input-${obj.id}" class="obj-input" placeholder="Add a comment..." maxlength="200" onkeydown="commentKeydown(event, '${obj.id}')" />
         <button class="btn btn-add" onclick="postComment('${obj.id}')">POST</button>
       </div>
     </div>
@@ -202,17 +200,11 @@ function cardHTML(obj) {
 
   return `
     <div class="obj-card-top">
-      <input
-        type="checkbox"
-        class="obj-check"
-        ${obj.done ? "checked" : ""}
-        onchange="toggleDone('${obj.id}', ${obj.done})"
-      />
+      <input type="checkbox" class="obj-check" ${obj.done ? "checked" : ""} onchange="toggleDone('${obj.id}', ${obj.done})" />
       <span class="obj-title" onclick="openModal('${obj.id}')">${escapeHTML(obj.title)}</span>
       <div class="obj-actions">
-        <button class="btn-comments ${isOpen ? "active" : ""}" onclick="toggleComments('${obj.id}')">
-          comments${commentCount > 0 ? ` ${commentCount}` : ""}
-        </button>
+        ${pinBtn}
+        <button class="btn-comments ${isOpen ? "active" : ""}" onclick="toggleComments('${obj.id}')">💬${commentCount > 0 ? ` ${commentCount}` : ""}</button>
         <button class="btn btn-danger" onclick="deleteObjective('${obj.id}')">✕</button>
       </div>
     </div>
@@ -223,9 +215,10 @@ function cardHTML(obj) {
 }
 
 function escapeHTML(str) {
-  return String(str)
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
+  return String(str).replace(/&/g,"&amp;").replace(/</g,"&lt;").replace(/>/g,"&gt;").replace(/"/g,"&quot;");
 }
+
+// Load map viewer
+const mapScript = document.createElement("script");
+mapScript.src = "map.js";
+document.body.appendChild(mapScript);

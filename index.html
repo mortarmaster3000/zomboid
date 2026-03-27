@@ -12,33 +12,32 @@
 
   <div class="layout">
 
+    <!-- MAP PANEL -->
     <div class="map-panel">
-      <iframe
-        src="https://b42map.com/"
-        class="map-frame"
-        title="Project Zomboid B42 Map"
-        allowfullscreen
-      ></iframe>
+      <canvas id="map-canvas"></canvas>
+      <div id="marker-layer"></div>
+      <div id="map-loading">Loading map...</div>
+      <div id="pin-banner" class="hidden">
+        📍 Click the map to place marker
+        <button onclick="cancelPin()">Cancel</button>
+      </div>
     </div>
 
+    <!-- OBJECTIVES PANEL -->
     <aside class="objectives-panel">
-
       <div class="add-objective-form">
         <button class="btn btn-add full-width" onclick="openModal()">+ ADD OBJECTIVE</button>
       </div>
-
       <div class="filter-tabs">
         <button class="tab active" onclick="setFilter('all', this)">ALL</button>
         <button class="tab" onclick="setFilter('active', this)">UNFINISHED</button>
         <button class="tab" onclick="setFilter('done', this)">FINISHED</button>
       </div>
-
       <div class="objectives-list" id="objectives-list">
         <div class="empty-state" id="empty-state">
           <span>theres nothing here</span>
         </div>
       </div>
-
     </aside>
   </div>
 
@@ -51,9 +50,9 @@
       </div>
       <div class="modal-body">
         <label class="modal-label">OBJECTIVE</label>
-        <input type="text" id="modal-obj-title" class="obj-input" placeholder="" maxlength="80" />
+        <input type="text" id="modal-obj-title" class="obj-input" placeholder="e.g. Find generator fuel" maxlength="80" />
         <label class="modal-label" style="margin-top:12px">DESCRIPTION</label>
-        <textarea id="modal-obj-desc" class="obj-input obj-textarea" placeholder="" maxlength="300"></textarea>
+        <textarea id="modal-obj-desc" class="obj-input obj-textarea" placeholder="Additional details..." maxlength="300"></textarea>
         <div class="modal-actions">
           <button class="btn btn-add" onclick="saveObjective()">SAVE</button>
         </div>
