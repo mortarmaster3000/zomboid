@@ -1,7 +1,7 @@
 // ── TILE MAP VIEWER ──────────────────────────
 const TILE_BASE = "https://mortarmaster3000.github.io/zomboid/tiles";
 const TILE_SIZE = 256;
-const MAX_ZOOM  = 5;
+const MAX_ZOOM  = 6;
 const MAP_W     = 153600;  // 150 tiles * 1024
 const MAP_H     = 81920;   // 80 tiles * 1024
 
