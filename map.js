@@ -18,29 +18,10 @@ const tileCache = {};
 
 function getTileImg(z, col, row) {
   const key = `${z}/${col}_${row}`;
-  if (tileCache[key] === "blank") return null;
   if (tileCache[key]) return tileCache[key];
   const img = new Image();
-  img.crossOrigin = "anonymous";
   img.src = `${TILE_BASE}/${z}/${col}_${row}.jpg`;
-  img.onload = () => {
-    // Check if tile is mostly white/blank
-    const offscreen = document.createElement("canvas");
-    offscreen.width  = 16;
-    offscreen.height = 16;
-    const octx = offscreen.getContext("2d");
-    octx.drawImage(img, 0, 0, 16, 16);
-    const data = octx.getImageData(0, 0, 16, 16).data;
-    let total = 0;
-    for (let i = 0; i < data.length; i += 4) {
-      total += (data[i] + data[i+1] + data[i+2]) / 3;
-    }
-    const avg = total / (data.length / 4);
-    if (avg > 240) {
-      tileCache[key] = "blank";
-    }
-    draw();
-  };
+  img.onload = () => draw();
   tileCache[key] = img;
   return img;
 }
@@ -94,7 +75,7 @@ function draw() {
       const img = getTileImg(tileZ, col, row);
       const x   = camX + col * tileRenderSize;
       const y   = camY + row * tileRenderSize;
-      if (img && img.complete && img.naturalWidth > 0) {
+      if (img.complete && img.naturalWidth > 0) {
         ctx.drawImage(img, x, y, tileRenderSize, tileRenderSize);
       } else {
         ctx.fillStyle = "#1a1a1a";
