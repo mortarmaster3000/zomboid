@@ -203,14 +203,18 @@ function escapeHTML(str) {
 window.addEventListener("resize", resize);
 resize();
 
-// Fit map to screen on load
-const fitScale = Math.min(canvas.width / MAP_W, canvas.height / MAP_H) * 0.9;
-zoom = Math.log2(fitScale * (2 ** MAX_ZOOM));
-zoom = Math.max(0, Math.min(MAX_ZOOM, zoom));
-const { w: mw, h: mh } = getMapSize();
-camX = (canvas.width  - mw) / 2;
-camY = (canvas.height - mh) / 2;
-draw();
+function fitMap() {
+  const fitScale = Math.min(canvas.width / MAP_W, canvas.height / MAP_H) * 0.9;
+  zoom = Math.log2(fitScale) + MAX_ZOOM;
+  zoom = Math.max(0, Math.min(MAX_ZOOM, zoom));
+  const { w: mw, h: mh } = getMapSize();
+  camX = (canvas.width  - mw) / 2;
+  camY = (canvas.height - mh) / 2;
+  draw();
+}
+
+// Wait for layout to settle before fitting
+setTimeout(fitMap, 100);
 
 canvas.style.cursor = "grab";
 
