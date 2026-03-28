@@ -2,8 +2,8 @@
 const TILE_BASE = "https://mortarmaster3000.github.io/zomboid/tiles";
 const TILE_SIZE = 256;
 const MAX_ZOOM  = 5;
-const MAP_W     = 41984;
-const MAP_H     = 26624;
+const MAP_W     = 153600;  // 150 tiles * 1024
+const MAP_H     = 81920;   // 80 tiles * 1024
 
 const canvas  = document.getElementById("map-canvas");
 const ctx     = canvas.getContext("2d");
