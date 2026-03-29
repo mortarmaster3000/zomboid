@@ -2,8 +2,18 @@
 const TILE_BASE = "https://mortarmaster3000.github.io/zomboid/tiles";
 const TILE_SIZE = 256;
 const MAX_ZOOM  = 7;
-const MAP_W     = 153600;  // 150 tiles * 1024
-const MAP_H     = 81920;   // 80 tiles * 1024
+const MAP_W     = 968 * 256;  // 247808
+const MAP_H     = 231 * 256;  // 59136
+
+function getTileUrl(z, col, row) {
+  if (z === 7) {
+    // Files are split across 7a and 7b
+    // 7a has cols 0-477 (first half), 7b has cols 478+ (second half)
+    const folder = col <= 477 ? "7a" : "7b";
+    return `${TILE_BASE}/${folder}/${col}_${row}.jpg`;
+  }
+  return `${TILE_BASE}/${z}/${col}_${row}.jpg`;
+}
 
 const canvas  = document.getElementById("map-canvas");
 const ctx     = canvas.getContext("2d");
@@ -20,7 +30,7 @@ function getTileImg(z, col, row) {
   const key = `${z}/${col}_${row}`;
   if (tileCache[key]) return tileCache[key];
   const img = new Image();
-  img.src = `${TILE_BASE}/${z}/${col}_${row}.jpg`;
+  img.src = getTileUrl(z, col, row);
   img.onload = () => draw();
   tileCache[key] = img;
   return img;
