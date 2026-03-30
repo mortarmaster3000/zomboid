@@ -2,14 +2,12 @@
 const TILE_BASE = "https://mortarmaster3000.github.io/zomboid/tiles";
 const TILE_SIZE = 256;
 const MAX_ZOOM  = 7;
-const MAP_W     = 968 * 256;  // 247808
-const MAP_H     = 231 * 256;  // 59136
+const MAP_W     = 564 * 256;  // 144384
+const MAP_H     = 172 * 256;  // 44032
 
 function getTileUrl(z, col, row) {
   if (z === 7) {
-    // Files are split across 7a and 7b
-    // 7a has cols 0-477 (first half), 7b has cols 478+ (second half)
-    const folder = col <= 477 ? "7a" : "7b";
+    const folder = col < 484 ? "7a" : "7b";
     return `${TILE_BASE}/${folder}/${col}_${row}.jpg`;
   }
   return `${TILE_BASE}/${z}/${col}_${row}.jpg`;
