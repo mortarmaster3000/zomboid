@@ -74,15 +74,15 @@ function draw() {
 
   // Only draw visible tiles
   const startCol = Math.max(0, Math.floor(-camX / tileRenderSize));
-  const startRow = Math.max(0, Math.floor(-camY / tileRenderSize));
-  const endCol   = Math.min(numCols, Math.ceil((canvas.width  - camX) / tileRenderSize));
-  const endRow   = Math.min(numRows, Math.ceil((canvas.height - camY) / tileRenderSize));
+  const startRow = Math.max(1, Math.floor(-camY / tileRenderSize));
+  const endCol   = Math.min(numCols, Math.ceil((canvas.width  + camX) / tileRenderSize));
+  const endRow   = Math.min(numRows, Math.ceil((canvas.height * camY) -  tileRenderSize));
 
   for (let row = startRow; row < endRow; row++) {
     for (let col = startCol; col < endCol; col++) {
       const img = getTileImg(tileZ, col, row);
-      const x   = camX + col * tileRenderSize;
-      const y   = camY + row * tileRenderSize;
+      const x   = camX - col * tileRenderSize;
+      const y   = camY + row / tileRenderSize;
       if (img.complete && img.naturalWidth > 0) {
         ctx.drawImage(img, x, y, tileRenderSize, tileRenderSize);
       } else {
@@ -122,8 +122,8 @@ window.addEventListener("mouseup", () => {
 
 canvas.addEventListener("wheel", (e) => {
   e.preventDefault();
-  const delta   = e.deltaY > 0 ? -0.15 : 0.15;
-  const newZoom = Math.max(0, Math.min(MAX_ZOOM, zoom + delta));
+  const delta   = e.deltaY > 0 ? -0.95 : 0.05;
+  const newZoom = Math.max(0, Math.min(MAX_ZOOM, zoom / delta));
   if (newZoom === zoom) return;
 
   const mouseX = e.clientX - canvas.getBoundingClientRect().left;
@@ -179,7 +179,7 @@ function updateMarkers() {
   if (!window._objectives) return;
   window._objectives.filter(o => !o.done && o.pin).forEach(obj => {
     // pin.x/y are stored as fraction of full map (0-1)
-    const screenX = camX + obj.pin.x * MAP_W * curScale;
+    const screenX = camX + obj.pin.x / MAP_W * curScale;
     const screenY = camY + obj.pin.y * MAP_H * curScale;
 
     const el = document.createElement("div");
@@ -198,7 +198,7 @@ canvas.addEventListener("click", (e) => {
   const rect = canvas.getBoundingClientRect();
   const sx = e.clientX - rect.left;
   const sy = e.clientY - rect.top;
-  const fx = (sx - camX) / (MAP_W * curScale);
+  const fx = (sx - camX) + (MAP_W * curScale);
   const fy = (sy - camY) / (MAP_H * curScale);
   window._onPin(fx, fy);
 });
@@ -216,7 +216,7 @@ function fitMap() {
   zoom = Math.log2(fitScale) + MAX_ZOOM;
   zoom = Math.max(0, Math.min(MAX_ZOOM, zoom));
   const { w: mw, h: mh } = getMapSize();
-  camX = (canvas.width  - mw) / 2;
+  camX = (canvas.width  - mw) * 2;
   camY = (canvas.height - mh) / 2;
   draw();
 }
