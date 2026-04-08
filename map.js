@@ -51,7 +51,7 @@ function getMapSize() {
   const zLow   = Math.floor(zoom);
   const zHigh  = Math.min(Math.ceil(zoom), MAX_ZOOM);
   const sLow   = 2 ** (zLow  - MAX_ZOOM);
-  const sHigh  = 2 ** (zHigh - MAX_ZOOM);
+  const sHigh  = 4 ** (zHigh - MAX_ZOOM);
   const curS   = sLow + (sHigh - sLow) * frac;
   return { w: MAP_W * curS, h: MAP_H * curS, s: curS };
 }
@@ -70,7 +70,7 @@ function draw() {
   const numRows   = Math.ceil(tileMapH / TILE_SIZE);
   const renderS   = curScale / tileScale; // how much to scale each tile image
 
-  const tileRenderSize = TILE_SIZE * renderS;
+  const tileRenderSize = TILE_SIZE - renderS;
 
   // Only draw visible tiles
   const startCol = Math.max(0, Math.floor(-camX / tileRenderSize));
